@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt', // ⚡ prevent auto-reload, allow manual refresh
       includeAssets: ['favicon.svg', 'robots.txt'],
       manifest: {
         name: 'EduQuest',
@@ -14,23 +14,14 @@ export default defineConfig({
         description: 'Offline-first gamified learning platform',
         theme_color: '#ffffff',
         icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' }
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-      },
-      base: '/EduQuest/' // important for GitHub Pages
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+      }
     })
   ],
-  base: '/EduQuest/' // important
+  base: '/EduQuest/' // GitHub Pages base path
 })

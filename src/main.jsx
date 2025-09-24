@@ -2,15 +2,24 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import { HashRouter } from 'react-router-dom'
-import { registerSW } from 'virtual:pwa-register' // Vite PWA plugin
+import { registerSW } from 'virtual:pwa-register'
 
-// Register service worker with auto-update
 const updateSW = registerSW({
   onRegistered(r) {
-    console.log('ServiceWorker registered:', r)
+    console.log('Service Worker registered:', r)
   },
-  onRegisterError(error) {
-    console.error('ServiceWorker registration failed:', error)
+  onRegisterError(err) {
+    console.error('Service Worker registration failed:', err)
+  },
+  onNeedRefresh() {
+    // 🔔 Instead of auto-reload, show a prompt or refresh manually
+    const wantsRefresh = confirm('A new version is available. Reload now?')
+    if (wantsRefresh) {
+      updateSW() // triggers the new SW and reloads
+    }
+  },
+  onOfflineReady() {
+    console.log('App is ready to work offline!')
   }
 })
 
