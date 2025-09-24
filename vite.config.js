@@ -1,8 +1,12 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
+
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'prompt', // ⚡ prevent auto-reload, allow manual refresh
       includeAssets: ['favicon.svg', 'robots.txt'],
       manifest: {
         name: 'Vectus',
@@ -19,5 +23,5 @@ export default defineConfig({
       }
     })
   ],
-  base: '/Vectus/' // ⬅️ updated to new repo name
+  base: '/Vectus/' // ⚡ must match repo name exactly (case-sensitive)
 })
