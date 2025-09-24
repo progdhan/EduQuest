@@ -23,5 +23,5 @@ export default defineConfig({
       }
     })
   ],
-  base: '/Vectus/' // ⚡ must match repo name exactly (case-sensitive)
+  base: '/' // ⚡ must match repo name exactly (case-sensitive)
 })
