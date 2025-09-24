@@ -1,16 +1,12 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
-
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt', // ⚡ prevent auto-reload, allow manual refresh
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'robots.txt'],
       manifest: {
-        name: 'EduQuest',
-        short_name: 'EduQuest',
+        name: 'Vectus',
+        short_name: 'Vectus',
         description: 'Offline-first gamified learning platform',
         theme_color: '#ffffff',
         icons: [
@@ -23,5 +19,5 @@ export default defineConfig({
       }
     })
   ],
-  base: '/EduQuest/' // GitHub Pages base path
+  base: '/Vectus/' // ⬅️ updated to new repo name
 })
