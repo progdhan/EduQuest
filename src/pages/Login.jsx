@@ -234,7 +234,7 @@ export default function Login() {
                             transition: 'opacity 0.5s ease 0.2s', // Staggered entrance
                         }}
                     >
-                        EduQuest Login
+                        Vectus Login
                     </h2>
 
                     <div style={{ position: 'relative', marginBottom: '20px' }}>
