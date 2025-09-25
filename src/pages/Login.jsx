@@ -203,8 +203,8 @@ export default function Login() {
                     <div
                         style={{
                             position: 'absolute',
-                            top: -20,
-                            left: '50%',
+                            top: -30,
+                            left: '43%',
                             transform: 'translateX(-50%)',
                             width: 60,
                             height: 60,
@@ -220,7 +220,7 @@ export default function Login() {
                             animation: 'pulse 2s ease-in-out infinite', // Gentle pulse
                         }}
                     >
-                        E
+                        V
                     </div>
 
                     <h2
@@ -241,7 +241,7 @@ export default function Login() {
                         <input
                             type="text"
                             placeholder="Username"
-                            value={username
+                            value={username}
                             onChange={e => setUsername(e.target.value)}
                             style={{
                                 ...inputStyle,
