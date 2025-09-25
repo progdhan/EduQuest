@@ -241,7 +241,7 @@ export default function Login() {
                         <input
                             type="text"
                             placeholder="Username"
-                            value={username}
+                            value={username
                             onChange={e => setUsername(e.target.value)}
                             style={{
                                 ...inputStyle,
