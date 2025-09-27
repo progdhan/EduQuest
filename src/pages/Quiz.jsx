@@ -1,368 +1,363 @@
-import React, { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { dbPromise, STORE_PROGRESS } from '../App'
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { dbPromise, STORE_PROGRESS } from '../App';
 
 const quizQuestions = [
-    {
-        question: 'Which cell component contains DNA?',
-        options: ['Nucleus', 'Mitochondria', 'Ribosomes', 'Cytoplasm'],
-        answer: 'Nucleus'
-    },
-    {
-        question: 'What produces energy for the cell?',
-        options: ['Cell membrane', 'Mitochondria', 'Nucleus', 'Ribosomes'],
-        answer: 'Mitochondria'
-    },
-    {
-        question: 'Which part controls what enters and exits the cell?',
-        options: ['Cell membrane', 'Nucleus', 'Cytoplasm', 'Ribosomes'],
-        answer: 'Cell membrane'
-    },
-    {
-        question: 'Ribosomes are responsible for making _____?',
-        options: ['Lipids', 'Proteins', 'Carbohydrates', 'RNA'],
-        answer: 'Proteins'
-    },
-    {
-        question: 'Which component is called the “powerhouse” of the cell?',
-        options: ['Nucleus', 'Ribosomes', 'Mitochondria', 'Cytoplasm'],
-        answer: 'Mitochondria'
-    }
-]
+    { question: 'Which cell component contains DNA?', options: ['Nucleus', 'Mitochondria', 'Ribosomes', 'Cytoplasm'], answer: 'Nucleus' },
+    { question: 'What produces energy for the cell?', options: ['Cell membrane', 'Mitochondria', 'Nucleus', 'Ribosomes'], answer: 'Mitochondria' },
+    { question: 'Which part controls what enters and exits the cell?', options: ['Cell membrane', 'Nucleus', 'Cytoplasm', 'Ribosomes'], answer: 'Cell membrane' },
+    { question: 'Ribosomes are responsible for making _____?', options: ['Lipids', 'Proteins', 'Carbohydrates', 'RNA'], answer: 'Proteins' },
+    { question: 'Which component is called the “powerhouse” of the cell?', options: ['Nucleus', 'Ribosomes', 'Mitochondria', 'Cytoplasm'], answer: 'Mitochondria' }
+];
 
 export default function Quiz() {
-    const navigate = useNavigate()
-    const location = useLocation()
-    const { subject, module, lessonId } = location.state || {}
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { subject, module, lessonId } = location.state || {};
 
-    const [user, setUser] = useState(null)
-    const [currentQ, setCurrentQ] = useState(0)
-    const [answers, setAnswers] = useState({})
-    const [showResult, setShowResult] = useState(false)
-    const [score, setScore] = useState(0)
-    const [xpEarned, setXpEarned] = useState(0)
-    const [mounted, setMounted] = useState(false)
+    const [user, setUser] = useState(null);
+    const [currentQ, setCurrentQ] = useState(0);
+    const [answers, setAnswers] = useState({});
+    const [showResult, setShowResult] = useState(false);
+    const [score, setScore] = useState(0);
+    const [xpEarned, setXpEarned] = useState(0);
+    const [mounted, setMounted] = useState(false);
+    const [heroAnim, setHeroAnim] = useState(false);
+    const [monsterAnim, setMonsterAnim] = useState(false);
+    const [monsterAnimType, setMonsterAnimType] = useState(''); // 'hit' or 'attack'
+    const [effectAnim, setEffectAnim] = useState(''); // 'lightning' or 'fireball'
+    const [monsterHP, setMonsterHP] = useState(quizQuestions.length);
+    const [heroHP, setHeroHP] = useState(quizQuestions.length);
 
     useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem('eduquest-user'))
+        const userData = JSON.parse(localStorage.getItem('eduquest-user'));
         if (!userData || userData.role !== 'student') {
-            navigate('/login')
-            return
+            navigate('/login');
+            return;
         }
-        setUser(userData)
+        setUser(userData);
+        const timer = setTimeout(() => setMounted(true), 100);
+        return () => clearTimeout(timer);
+    }, [navigate]);
 
-        // Trigger entrance animation
-        const timer = setTimeout(() => setMounted(true), 100)
-        return () => clearTimeout(timer)
-    }, [navigate])
-
-    if (!user || !subject || !module || !lessonId) return null
+    if (!user || !subject || !module || !lessonId) return null;
 
     function selectOption(option) {
-        setAnswers({ ...answers, [currentQ]: option })
+        setAnswers({ ...answers, [currentQ]: option });
     }
 
     function nextQuestion() {
         if (answers[currentQ] === undefined) {
-            alert('Please select an answer')
-            return
+            alert('Please select an answer');
+            return;
         }
-        if (currentQ < quizQuestions.length - 1) {
-            setCurrentQ(currentQ + 1)
+        const isCorrect = answers[currentQ] === quizQuestions[currentQ].answer;
+        if (isCorrect) {
+            setHeroAnim(true);
+            setEffectAnim('lightning');
+            setTimeout(() => {
+                setHeroAnim(false);
+                setEffectAnim('');
+                setMonsterAnimType('hit');
+                setMonsterAnim(true);
+                setMonsterHP((hp) => Math.max(0, hp - 1));
+                setTimeout(() => setMonsterAnim(false), 600);
+                if (currentQ < quizQuestions.length - 1) {
+                    setCurrentQ(currentQ + 1);
+                } else {
+                    calculateScore();
+                }
+            }, 600);
         } else {
-            calculateScore()
+            setMonsterAnimType('attack');
+            setEffectAnim('fireball');
+            setMonsterAnim(true);
+            setTimeout(() => {
+                setMonsterAnim(false);
+                setEffectAnim('');
+                setHeroAnim(true);
+                setHeroHP((hp) => Math.max(0, hp - 1));
+                setTimeout(() => setHeroAnim(false), 600);
+                if (currentQ < quizQuestions.length - 1) {
+                    setCurrentQ(currentQ + 1);
+                } else {
+                    calculateScore();
+                }
+            }, 600);
         }
     }
 
     async function calculateScore() {
-        let correct = 0
+        let correct = 0;
         quizQuestions.forEach((q, i) => {
-            if (answers[i] === q.answer) correct++
-        })
-        setScore(correct)
-        const xp = correct * 10
-        setXpEarned(xp)
+            if (answers[i] === q.answer) correct++;
+        });
+        setScore(correct);
+        const xp = correct * 10;
+        setXpEarned(xp);
 
-        const db = await dbPromise
-        let progress = await db.get(STORE_PROGRESS, user.username)
-        if (!progress) {
-            progress = { username: user.username, xp: 0, completedLessons: [] }
+        const db = await dbPromise;
+        let progress = await db.get(STORE_PROGRESS, user.username);
+        if (!progress) progress = { username: user.username, xp: 0, completedLessons: [] };
+
+        if (!progress.completedLessons.includes(lessonId)) {
+            progress.completedLessons.push(lessonId);
         }
+        progress.xp += xp;
 
-        let isFirstTime = !progress.completedLessons.includes(lessonId)
-        if (isFirstTime) {
-            progress.completedLessons.push(lessonId)
-            progress.xp += xp
-        } else {
-            // optionally: do not add xp again if re-taking
-            // progress.xp += 0
-            // or allow re-take xp (your existing logic)
-            progress.xp += xp
-        }
-
-        await db.put(STORE_PROGRESS, progress)
-
-        // Dispatch event so teacher dashboard updates
-        window.dispatchEvent(new Event('progress-updated'))
-
-        setShowResult(true)
+        await db.put(STORE_PROGRESS, progress);
+        window.dispatchEvent(new Event('progress-updated'));
+        setShowResult(true);
     }
 
     function finish() {
-        navigate('/student')
+        navigate('/student');
     }
 
     function handleCancel() {
-        const confirmed = window.confirm(
-            'Are you sure you want to cancel? You will lose this quiz progress.'
-        )
-        if (confirmed) {
-            navigate('/student')
+        if (window.confirm('Are you sure you want to cancel? You will lose this quiz progress.')) {
+            navigate('/student');
         }
     }
 
-    const q = quizQuestions[currentQ]
+    const q = quizQuestions[currentQ];
 
-    // Inline styles with animations
+    // Background style
     const backgroundStyle = {
         position: 'fixed',
         top: 0,
         left: 0,
         width: '100%',
         height: '100%',
-        background: 'linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c)',
-        backgroundSize: '400% 400%',
-        animation: 'gradientShift 15s ease infinite',
+        background: 'linear-gradient(135deg, #1f1f2e, #3a3a5a)',
+        overflow: 'hidden',
         zIndex: -1,
-    }
+    };
 
-    const containerStyle = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        background: 'transparent',
-        fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-        padding: '20px',
-        boxSizing: 'border-box',
-        position: 'relative',
-        zIndex: 1,
-    }
+    const shapeStyle = (size, top, left, delay, color) => ({
+        position: 'absolute',
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: color,
+        top: top,
+        left: left,
+        animation: `floatShape 6s ease-in-out ${delay}s infinite alternate`,
+        opacity: 0.4,
+    });
 
+    // Card style
     const cardStyle = {
         display: mounted ? 'block' : 'none',
         animation: mounted ? 'fadeInUp 0.8s ease-out forwards' : 'none',
         opacity: mounted ? 1 : 0,
         transform: mounted ? 'translateY(0)' : 'translateY(30px)',
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        padding: '60px 40px',
+        background: 'rgba(0,0,0,0.7)',
+        padding: '40px 30px',
         borderRadius: '20px',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-        width: '100%',
-        maxWidth: '600px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+        width: '90%',
+        maxWidth: '500px',
         boxSizing: 'border-box',
         textAlign: 'center',
         position: 'relative',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        transition: 'all 0.3s ease',
-    }
+        color: 'white',
+    };
 
-    const titleStyle = {
-        fontSize: '1.6rem',
-        marginBottom: 20,
-        color: '#333',
-        fontWeight: '300',
-        letterSpacing: '0.5px',
-        opacity: mounted ? 1 : 0,
-        transition: 'opacity 0.5s ease 0.2s',
-    }
-
-    const questionStyle = {
-        fontSize: '1.3rem',
-        marginBottom: 25,
-        color: '#374151',
-        fontWeight: '500',
-        lineHeight: '1.5',
-        opacity: mounted ? 1 : 0,
-        transform: mounted ? 'translateY(0)' : 'translateY(10px)',
-        transition: 'all 0.5s ease 0.3s',
-    }
-
+    // Option styles
     const optionsStyle = {
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
-        marginBottom: 30,
+        gap: '12px',
+        marginBottom: '30px',
         textAlign: 'left',
-    }
+    };
 
     const optionStyle = {
-        fontSize: '1.1rem',
+        fontSize: '1rem',
         display: 'flex',
         alignItems: 'center',
-        gap: 12,
+        gap: '12px',
         cursor: 'pointer',
-        padding: '14px 18px',
-        background: 'rgba(224, 231, 255, 0.3)',
-        borderRadius: 12,
+        padding: '12px 18px',
+        borderRadius: '50px',
         border: '2px solid transparent',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        position: 'relative',
-        overflow: 'hidden',
-    }
+        background: '#2a2a40',
+        transition: 'all 0.3s ease',
+    };
+
+    const hoverOptionStyle = {
+        transform: 'scale(1.03)',
+        background: '#3a3a5a',
+        borderColor: '#667eea',
+    };
 
     const selectedOptionStyle = {
         ...optionStyle,
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: '#667eea',
         color: 'white',
-        borderColor: '#667eea',
-        transform: 'scale(1.02)',
-        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
-    }
-
-    const actionsStyle = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 15,
-        marginTop: 20,
-    }
+        borderColor: '#764ba2',
+        transform: 'scale(1.05)',
+    };
 
     const buttonStyle = {
-        padding: '14px 28px',
-        fontSize: '1rem',
+        padding: '12px 24px',
         borderRadius: '50px',
         border: 'none',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: '#fff',
+        background: '#667eea',
+        color: 'white',
+        fontWeight: '600',
         cursor: 'pointer',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: '0 8px 16px rgba(102, 126, 234, 0.3)',
-        position: 'relative',
-        overflow: 'hidden',
-        transform: 'scale(1)',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minWidth: 120,
-    }
-
-    const secondaryButtonStyle = {
-        ...buttonStyle,
-        background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
-        color: '#4f46e5',
-        boxShadow: '0 8px 16px rgba(79, 70, 229, 0.2)',
-    }
-
-    const resultTitleStyle = {
-        ...titleStyle,
-        fontSize: '2rem',
-        marginBottom: 30,
-    }
-
-    const resultTextStyle = {
-        fontSize: '1.2rem',
-        marginBottom: 15,
-        color: '#333',
-        fontWeight: '500',
-        opacity: showResult ? 1 : 0,
-        transform: showResult ? 'translateY(0)' : 'translateY(10px)',
-        transition: 'all 0.5s ease 0.4s',
-    }
-
-    const reviewSectionStyle = {
-        marginTop: 30,
-        textAlign: 'left',
-        maxHeight: '400px',
-        overflowY: 'auto',
-        paddingRight: 10,
-    }
-
-    const reviewItemStyle = {
-        marginBottom: 20,
-        padding: '16px',
-        background: 'rgba(224, 231, 255, 0.3)',
-        borderRadius: 12,
-        borderLeft: '4px solid #667eea',
+        margin: '5px',
         transition: 'all 0.3s ease',
-        opacity: showResult ? 1 : 0,
-        transform: showResult ? 'translateY(0)' : 'translateY(10px)',
-        transitionDelay: showResult ? '0.5s' : 'none',
-    }
-
-    const correctStyle = {
-        color: '#10b981',
-        fontWeight: '600',
-    }
-
-    const incorrectStyle = {
-        color: '#ef4444',
-        fontWeight: '600',
-    }
+    };
 
     return (
         <>
-            <div style={backgroundStyle} />
+            <div style={backgroundStyle}>
+                <div style={shapeStyle('80px', '10%', '20%', 0, '#667eea')} />
+                <div style={shapeStyle('120px', '70%', '10%', 2, '#764ba2')} />
+                <div style={shapeStyle('60px', '50%', '80%', 1, '#f093fb')} />
+                <div style={shapeStyle('100px', '30%', '60%', 3, '#f5576c')} />
+            </div>
+
             <style>{`
-                @keyframes gradientShift {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                }
                 @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
+                    from {opacity:0; transform:translateY(30px);}
+                    to {opacity:1; transform:translateY(0);}
                 }
-                @keyframes shimmer {
-                    0% { background-position: -200% 0; }
-                    100% { background-position: 200% 0; }
+                @keyframes floatShape {
+                    0% {transform: translateY(0);}
+                    50% {transform: translateY(-20px);}
+                    100% {transform: translateY(0);}
                 }
-                @keyframes optionSelect {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(1.05); }
-                    100% { transform: scale(1.02); }
+                @keyframes heroAttack {
+                    0% { transform: translateX(0); }
+                    40% { transform: translateX(30px) scale(1.1); }
+                    60% { transform: translateX(-10px) scale(1.05); }
+                    100% { transform: translateX(0); }
+                }
+                @keyframes monsterHit {
+                    0% { filter: brightness(1); }
+                    20% { filter: brightness(1.3) drop-shadow(0 0 8px #f5576c); transform: scale(1.08) rotate(-5deg); }
+                    60% { filter: brightness(0.8); transform: scale(0.95) rotate(5deg); }
+                    100% { filter: brightness(1); transform: scale(1) rotate(0deg); }
+                }
+                @keyframes monsterAttack {
+                    0% { transform: scale(1) translateX(0); }
+                    30% { transform: scale(1.15) translateX(-18px) rotate(-8deg); filter: brightness(1.2) drop-shadow(0 0 12px #f5576c); }
+                    60% { transform: scale(0.95) translateX(10px) rotate(8deg); filter: brightness(0.8); }
+                    100% { transform: scale(1) translateX(0); filter: brightness(1); }
+                }
+                @keyframes monsterDefeat {
+                    0% { opacity: 1; }
+                    100% { opacity: 0.2; filter: grayscale(1); }
+                }
+                @keyframes lightning {
+                    0% { opacity: 0; transform: scaleY(0.2) translateX(0); }
+                    10% { opacity: 1; transform: scaleY(1.1) translateX(0); }
+                    80% { opacity: 1; transform: scaleY(1) translateX(120px); }
+                    100% { opacity: 0; transform: scaleY(0.2) translateX(120px); }
+                }
+                @keyframes fireball {
+                    0% { opacity: 0; transform: scale(0.5) translateX(0); }
+                    10% { opacity: 1; transform: scale(1.1) translateX(0); }
+                    80% { opacity: 1; transform: scale(1) translateX(-120px); }
+                    100% { opacity: 0; transform: scale(0.5) translateX(-120px); }
                 }
             `}</style>
-            <div style={containerStyle}>
+
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px' }}>
                 <div style={cardStyle}>
+                    {/* Hero vs Monster Battle UI */}
+                    {!showResult && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24, position: 'relative' }}>
+                            {/* Hero */}
+                            <div style={{ flex: 1, textAlign: 'center', position: 'relative', minWidth: 120 }}>
+                                <span
+                                    style={{
+                                        fontSize: '3.2rem',
+                                        display: 'inline-block',
+                                        transition: 'filter 0.3s',
+                                        animation: heroAnim ? 'heroAttack 0.6s' : 'none',
+                                    }}
+                                    role="img"
+                                    aria-label="Hero"
+                                >🦸‍♂️</span>
+                                <div style={{ fontSize: '1rem', marginTop: 8, color: '#aaf', fontWeight: 500 }}>Hero</div>
+                                <div style={{ marginTop: 10, width: 90, marginLeft: 'auto', marginRight: 'auto' }}>
+                                    <div style={{ height: 8, borderRadius: 4, background: '#222', marginBottom: 2 }}>
+                                        <div style={{ width: `${(heroHP / quizQuestions.length) * 100}%`, height: '100%', borderRadius: 4, background: heroHP === 0 ? '#aaa' : '#667eea', transition: 'width 0.4s cubic-bezier(.4,0,.2,1)' }} />
+                                    </div>
+                                    <div style={{ fontSize: '0.8rem', color: '#667eea', fontWeight: 500 }}>{heroHP} HP</div>
+                                </div>
+                            </div>
+                            {/* Effect Animation */}
+                            {effectAnim === 'lightning' && (
+                                <div style={{ position: 'absolute', left: 'calc(20% + 40px)', top: '40px', zIndex: 2, pointerEvents: 'none' }}>
+                                    <svg width="120" height="32" style={{ display: 'block' }}>
+                                        <polyline points="0,16 40,10 60,22 90,6 120,16" stroke="#f7e600" strokeWidth="5" fill="none" style={{ filter: 'drop-shadow(0 0 8px #f7e600)' }}>
+                                            <animate attributeName="stroke" values="#f7e600;#fff;#f7e600" dur="0.6s" repeatCount="1" />
+                                        </polyline>
+                                    </svg>
+                                    <div style={{ position: 'absolute', left: 110, top: 8, fontSize: 22, color: '#f7e600', animation: 'lightning 0.6s' }}>⚡</div>
+                                </div>
+                            )}
+                            {effectAnim === 'fireball' && (
+                                <div style={{ position: 'absolute', right: 'calc(20% + 40px)', top: '40px', zIndex: 2, pointerEvents: 'none' }}>
+                                    <svg width="120" height="32" style={{ display: 'block' }}>
+                                        <circle cx="120" cy="16" r="14" fill="#f5576c" style={{ filter: 'drop-shadow(0 0 12px #f5576c)' }}>
+                                            <animate attributeName="fill" values="#f5576c;#fff;#f5576c" dur="0.6s" repeatCount="1" />
+                                        </circle>
+                                    </svg>
+                                    <div style={{ position: 'absolute', left: 0, top: 8, fontSize: 22, color: '#f5576c', animation: 'fireball 0.6s' }}>🔥</div>
+                                </div>
+                            )}
+                            {/* Monster */}
+                            <div style={{ flex: 1, textAlign: 'center', position: 'relative', minWidth: 120 }}>
+                                <span
+                                    style={{
+                                        fontSize: '3.2rem',
+                                        display: 'inline-block',
+                                        transition: 'filter 0.3s',
+                                        animation: monsterAnim
+                                            ? (monsterHP === 0
+                                                ? 'monsterDefeat 0.8s forwards'
+                                                : monsterAnimType === 'attack'
+                                                    ? 'monsterAttack 0.6s'
+                                                    : 'monsterHit 0.6s')
+                                            : 'none',
+                                    }}
+                                    role="img"
+                                    aria-label="Monster"
+                                >👹</span>
+                                <div style={{ fontSize: '1rem', marginTop: 8, color: '#faa', fontWeight: 500 }}>Monster</div>
+                                <div style={{ marginTop: 10, width: 90, marginLeft: 'auto', marginRight: 'auto' }}>
+                                    <div style={{ height: 8, borderRadius: 4, background: '#222', marginBottom: 2 }}>
+                                        <div style={{ width: `${(monsterHP / quizQuestions.length) * 100}%`, height: '100%', borderRadius: 4, background: monsterHP === 0 ? '#aaa' : '#f5576c', transition: 'width 0.4s cubic-bezier(.4,0,.2,1)' }} />
+                                    </div>
+                                    <div style={{ fontSize: '0.8rem', color: '#f5576c', fontWeight: 500 }}>{monsterHP} HP</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {/* ...existing code... */}
                     {!showResult ? (
                         <>
-                            <h2 style={titleStyle}>
-                                Question {currentQ + 1} of {quizQuestions.length}
-                            </h2>
-                            <p style={questionStyle}>{q.question}</p>
+                            <h2 style={{ marginBottom: '20px' }}>Question {currentQ + 1} / {quizQuestions.length}</h2>
+                            <p style={{ marginBottom: '20px' }}>{q.question}</p>
+
                             <div style={optionsStyle}>
-                                {q.options.map((opt, idx) => (
+                                {q.options.map((opt) => (
                                     <label
                                         key={opt}
                                         style={answers[currentQ] === opt ? selectedOptionStyle : optionStyle}
                                         onClick={() => selectOption(opt)}
                                         onMouseEnter={(e) => {
-                                            if (answers[currentQ] !== opt) {
-                                                e.target.style.transform = 'scale(1.01)';
-                                                e.target.style.background = 'rgba(102, 126, 234, 0.1)';
-                                                e.target.style.borderColor = '#667eea';
-                                            }
+                                            if (answers[currentQ] !== opt) Object.assign(e.currentTarget.style, hoverOptionStyle);
                                         }}
                                         onMouseLeave={(e) => {
-                                            if (answers[currentQ] !== opt) {
-                                                e.target.style.transform = 'scale(1)';
-                                                e.target.style.background = 'rgba(224, 231, 255, 0.3)';
-                                                e.target.style.borderColor = 'transparent';
-                                            }
-                                        }}
-                                        onAnimationStart={() => {
-                                            if (answers[currentQ] === opt) {
-                                                e.target.style.animation = 'optionSelect 0.3s ease';
-                                            }
+                                            if (answers[currentQ] !== opt) Object.assign(e.currentTarget.style, optionStyle);
                                         }}
                                     >
                                         <input
@@ -370,117 +365,49 @@ export default function Quiz() {
                                             name={`question-${currentQ}`}
                                             checked={answers[currentQ] === opt}
                                             onChange={() => selectOption(opt)}
-                                            style={{ marginRight: 12, transform: 'scale(1.2)', accentColor: '#667eea' }}
+                                            style={{ marginRight: '12px', transform: 'scale(1.2)', accentColor: '#667eea' }}
                                         />
                                         {opt}
                                     </label>
                                 ))}
                             </div>
 
-                            <div style={actionsStyle}>
-                                <button
-                                    onClick={nextQuestion}
-                                    style={buttonStyle}
-                                    onMouseEnter={(e) => {
-                                        e.target.style.transform = 'translateY(-2px) scale(1.02)';
-                                        e.target.style.boxShadow = '0 12px 24px rgba(102, 126, 234, 0.4)';
-                                        e.target.style.background = 'linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%)';
-                                        e.target.style.backgroundSize = '200% 100%';
-                                        e.target.style.animation = 'shimmer 1.5s ease-in-out infinite';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.target.style.transform = 'translateY(0) scale(1)';
-                                        e.target.style.boxShadow = '0 8px 16px rgba(102, 126, 234, 0.3)';
-                                        e.target.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                                        e.target.style.backgroundSize = '100% 100%';
-                                        e.target.style.animation = 'none';
-                                    }}
-                                >
+                            <div>
+                                <button style={buttonStyle} onClick={nextQuestion}>
                                     {currentQ === quizQuestions.length - 1 ? 'Submit' : 'Next'}
                                 </button>
-                                <button
-                                    onClick={handleCancel}
-                                    style={secondaryButtonStyle}
-                                    onMouseEnter={(e) => {
-                                        e.target.style.transform = 'translateY(-2px) scale(1.02)';
-                                        e.target.style.boxShadow = '0 12px 24px rgba(79, 70, 229, 0.3)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.target.style.transform = 'translateY(0) scale(1)';
-                                        e.target.style.boxShadow = '0 8px 16px rgba(79, 70, 229, 0.2)';
-                                    }}
-                                >
-                                    Cancel
-                                </button>
+                                <button style={{ ...buttonStyle, background: '#555' }} onClick={handleCancel}>Cancel</button>
                             </div>
                         </>
                     ) : (
                         <>
-                            <h2 style={resultTitleStyle}>🎉 Quiz Completed!</h2>
-                            <p style={resultTextStyle}>
-                                <strong>Score:</strong> {score} / {quizQuestions.length}
-                            </p>
-                            <p style={resultTextStyle}>
-                                <strong>XP Earned:</strong> {xpEarned}
-                            </p>
+                            <h2 style={{ marginBottom: '20px' }}>
+                                {score >= 3 ? '� Monster Defeated!' : '💀 Hero Defeated!'}
+                            </h2>
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 18 }}>
+                                <span style={{ fontSize: '3.2rem', marginRight: 18, filter: score >= 3 ? 'none' : 'grayscale(1) opacity(0.3)' }}>🦸‍♂️</span>
+                                <span style={{ fontSize: '3.2rem', filter: score >= 3 ? 'grayscale(1) opacity(0.3)' : 'none' }}>👹</span>
+                            </div>
+                            <p>Score: {score} / {quizQuestions.length}</p>
+                            <p>XP Earned: {xpEarned}</p>
 
-                            <div style={reviewSectionStyle}>
-                                <h3 style={{
-                                    marginBottom: 20,
-                                    color: '#333',
-                                    fontSize: '1.3rem',
-                                    fontWeight: '500',
-                                    textAlign: 'center',
-                                }}>
-                                    Review Your Answers
-                                </h3>
+                            <div style={{ marginTop: '20px', textAlign: 'left' }}>
                                 {quizQuestions.map((q, i) => (
-                                    <div key={i} style={reviewItemStyle}>
-                                        <p style={{ marginBottom: 8, fontWeight: '600', color: '#555' }}>
-                                            Q{i + 1}: {q.question}
-                                        </p>
-                                        <p style={{ marginBottom: 4 }}>
-                                            Your answer: <span style={answers[i] === q.answer ? correctStyle : incorrectStyle}>{answers[i]}</span> {answers[i] === q.answer ? '✅' : '❌'}
-                                        </p>
-                                        {answers[i] !== q.answer && (
-                                            <p style={{
-                                                color: '#10b981',
-                                                fontWeight: '600',
-                                                margin: 0,
-                                            }}>
-                                                Correct answer: {q.answer}
-                                            </p>
-                                        )}
+                                    <div key={i} style={{ marginBottom: '15px', padding: '10px', background: '#2a2a40', borderRadius: '15px' }}>
+                                        <p>Q{i + 1}: {q.question}</p>
+                                        <p>Your answer: {answers[i]} {answers[i] === q.answer ? '✅' : '❌'}</p>
+                                        {answers[i] !== q.answer && <p>Correct: {q.answer}</p>}
                                     </div>
                                 ))}
                             </div>
 
-                            <div style={actionsStyle}>
-                                <button
-                                    onClick={finish}
-                                    style={buttonStyle}
-                                    onMouseEnter={(e) => {
-                                        e.target.style.transform = 'translateY(-2px) scale(1.02)';
-                                        e.target.style.boxShadow = '0 12px 24px rgba(102, 126, 234, 0.4)';
-                                        e.target.style.background = 'linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%)';
-                                        e.target.style.backgroundSize = '200% 100%';
-                                        e.target.style.animation = 'shimmer 1.5s ease-in-out infinite';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.target.style.transform = 'translateY(0) scale(1)';
-                                        e.target.style.boxShadow = '0 8px 16px rgba(102, 126, 234, 0.3)';
-                                        e.target.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                                        e.target.style.backgroundSize = '100% 100%';
-                                        e.target.style.animation = 'none';
-                                    }}
-                                >
-                                    Back to Dashboard
-                                </button>
+                            <div style={{ marginTop: '20px' }}>
+                                <button style={buttonStyle} onClick={finish}>Back to Dashboard</button>
                             </div>
                         </>
                     )}
                 </div>
             </div>
         </>
-    )
+    );
 }

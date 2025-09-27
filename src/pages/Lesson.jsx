@@ -10,7 +10,7 @@ const lessonContent = {
         'Mitochondria: Produces energy for the cell.',
         'Ribosomes: Make proteins.'
     ],
-    image: '/images/cell-diagram.png'  // Make sure image exists here
+    image: 'images/cell-diagram.png' // Ensure image exists
 }
 
 export default function Lesson() {
@@ -28,70 +28,79 @@ export default function Lesson() {
         }
         setUser(userData)
 
-        // Trigger entrance animation
         const timer = setTimeout(() => setMounted(true), 100)
         return () => clearTimeout(timer)
     }, [navigate])
 
     if (!user || !subject || !module) return null
 
-    // Inline styles with animations
     const backgroundStyle = {
         position: 'fixed',
         top: 0,
         left: 0,
         width: '100%',
         height: '100%',
-        background: 'linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c)',
-        backgroundSize: '400% 400%',
-        animation: 'gradientShift 15s ease infinite',
+        background: 'linear-gradient(135deg, #1f1f2e, #3a3a5a)',
+        overflow: 'hidden',
         zIndex: -1,
     }
+
+    const shapeStyle = (size, top, left, delay, color) => ({
+        position: 'absolute',
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: color,
+        top: top,
+        left: left,
+        animation: `floatShape 6s ease-in-out ${delay}s infinite alternate`,
+        opacity: 0.4,
+    })
 
     const containerStyle = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        background: 'transparent',
-        fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
         padding: '20px',
-        boxSizing: 'border-box',
+        fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
         position: 'relative',
         zIndex: 1,
     }
 
     const cardStyle = {
         display: mounted ? 'block' : 'none',
-        animation: mounted ? 'fadeInUp 0.8s ease-out forwards' : 'none',
+        animation: mounted ? 'fadeInUpCard 1s cubic-bezier(.4,0,.2,1) forwards' : 'none',
         opacity: mounted ? 1 : 0,
-        transform: mounted ? 'translateY(0)' : 'translateY(30px)',
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        padding: '60px 40px',
-        borderRadius: '20px',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+        transform: mounted ? 'translateY(0)' : 'translateY(40px)',
+        background: 'rgba(30,30,50,0.45)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1.5px solid rgba(255,255,255,0.15)',
+        padding: '56px 32px 40px 32px',
+        borderRadius: '28px',
+        boxShadow: '0 24px 48px rgba(30,30,50,0.35)',
         width: '100%',
-        maxWidth: '700px',
+        maxWidth: '720px',
         boxSizing: 'border-box',
         textAlign: 'center',
         position: 'relative',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        transition: 'all 0.3s ease',
+        color: '#e0e0e0',
     }
 
     const headingStyle = {
         marginBottom: 30,
-        color: '#333',
-        fontWeight: '300',
-        fontSize: '2rem',
+        color: '#fff',
+        fontWeight: '600',
+        fontSize: '2.2rem',
         letterSpacing: '1px',
         opacity: mounted ? 1 : 0,
-        transition: 'opacity 0.5s ease 0.2s',
+        transition: 'opacity 0.7s cubic-bezier(.4,0,.2,1) 0.2s',
+        textShadow: '0 2px 12px #667eea44',
     }
 
     const imageContainerStyle = {
-        marginBottom: 40,
+        marginBottom: 30,
         opacity: mounted ? 1 : 0,
         transform: mounted ? 'translateY(0)' : 'translateY(20px)',
         transition: 'all 0.5s ease 0.3s',
@@ -100,68 +109,46 @@ export default function Lesson() {
     const cellImageStyle = {
         maxWidth: '100%',
         maxHeight: 300,
-        width: 'auto',
-        height: 'auto',
         borderRadius: 15,
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)',
         objectFit: 'contain',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    }
-
-    const lessonCardStyle = {
-        background: 'transparent', // No extra card, integrate into main
-        marginBottom: 40,
-        opacity: mounted ? 1 : 0,
-        transform: mounted ? 'translateY(0)' : 'translateY(20px)',
-        transition: 'all 0.5s ease 0.4s',
     }
 
     const lessonListStyle = {
         fontSize: '1.1rem',
         lineHeight: '1.8',
-        color: '#374151',
+        color: '#e0e0e0',
         marginBottom: 30,
-        paddingLeft: 0,
-        listStyleType: 'none',
+        paddingLeft: '20px',
         textAlign: 'left',
     }
 
-    const lessonItemStyle = {
-        marginBottom: 15,
-        padding: '12px 20px',
-        background: 'rgba(224, 231, 255, 0.3)',
-        borderRadius: 10,
-        borderLeft: '4px solid #667eea',
-        transition: 'all 0.3s ease',
-        cursor: 'default',
-    }
-
     const buttonStyle = {
-        padding: '16px 30px',
-        fontSize: '1.1rem',
+        padding: '12px 28px',
+        fontSize: '1.08rem',
         borderRadius: '50px',
         border: 'none',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: '#fff',
         cursor: 'pointer',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: '0 8px 16px rgba(102, 126, 234, 0.3)',
-        position: 'relative',
-        overflow: 'hidden',
-        transform: 'scale(1)',
+        transition: 'all 0.3s cubic-bezier(.4,0,.2,1)',
+        boxShadow: '0 8px 24px rgba(102,126,234,0.18)',
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 8,
-        minWidth: 160,
-        margin: '0 10px',
+        gap: 10,
+        margin: '0 7px',
+        minWidth: 140,
+        fontWeight: 500,
+        letterSpacing: '0.5px',
     }
 
     const secondaryButtonStyle = {
         ...buttonStyle,
         background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
         color: '#4f46e5',
-        boxShadow: '0 8px 16px rgba(79, 70, 229, 0.2)',
+        boxShadow: '0 8px 24px rgba(79,70,229,0.13)',
     }
 
     const buttonRowStyle = {
@@ -169,40 +156,56 @@ export default function Lesson() {
         justifyContent: 'center',
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: 15,
         marginTop: 20,
     }
 
     return (
         <>
-            <div style={backgroundStyle} />
+            <div style={backgroundStyle}>
+                <div style={shapeStyle('80px', '10%', '20%', 0, '#667eea')} />
+                <div style={shapeStyle('120px', '70%', '10%', 2, '#764ba2')} />
+                <div style={shapeStyle('60px', '50%', '80%', 1, '#f093fb')} />
+                <div style={shapeStyle('100px', '30%', '60%', 3, '#f5576c')} />
+            </div>
+
             <style>{`
-                @keyframes gradientShift {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                }
-                @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                @keyframes shimmer {
-                    0% { background-position: -200% 0; }
-                    100% { background-position: 200% 0; }
-                }
-                @keyframes float {
-                    0%, 100% { transform: translateY(0px); }
-                    50% { transform: translateY(-5px); }
-                }
-            `}</style>
+                                @keyframes fadeInUpCard {
+                                        from {opacity:0; transform:translateY(40px);}
+                                        to {opacity:1; transform:translateY(0);}
+                                }
+                                @keyframes fadeInUp {
+                                        from {opacity:0; transform:translateY(30px);}
+                                        to {opacity:1; transform:translateY(0);}
+                                }
+                                @keyframes floatShape {
+                                        0% {transform: translateY(0);}
+                                        50% {transform: translateY(-20px);}
+                                        100% {transform: translateY(0);}
+                                }
+                                .lesson-card button:hover:not(:disabled) {
+                                    filter: brightness(1.08);
+                                    box-shadow: 0 12px 32px rgba(102,126,234,0.32);
+                                }
+                                .lesson-card button:active:not(:disabled) {
+                                    filter: brightness(0.95);
+                                }
+                                .lesson-card img {
+                                    transition: transform 0.4s cubic-bezier(.4,0,.2,1), box-shadow 0.3s cubic-bezier(.4,0,.2,1);
+                                }
+                                @media (max-width: 700px) {
+                                    .lesson-card {
+                                        padding: 18px 2vw 24px 2vw !important;
+                                        border-radius: 18px !important;
+                                        max-width: 98vw !important;
+                                    }
+                                    .lesson-card h2 {
+                                        font-size: 1.3rem !important;
+                                    }
+                                }
+                        `}</style>
+
             <div style={containerStyle}>
-                <div style={cardStyle}>
+                <div style={cardStyle} className="lesson-card">
                     <h2 style={headingStyle}>
                         {subject} → {module}: {lessonContent.title}
                     </h2>
@@ -215,66 +218,64 @@ export default function Lesson() {
                             loading="lazy"
                             onMouseEnter={(e) => {
                                 e.target.style.transform = 'scale(1.02)';
-                                e.target.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.2)';
+                                e.target.style.boxShadow = '0 15px 35px rgba(0,0,0,0.5)';
                             }}
                             onMouseLeave={(e) => {
                                 e.target.style.transform = 'scale(1)';
-                                e.target.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.15)';
+                                e.target.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
                             }}
                         />
                     </div>
 
-                    <div style={lessonCardStyle}>
-                        <ul style={lessonListStyle}>
-                            {lessonContent.text.map((item, idx) => (
-                                <li key={idx} style={{ ...lessonItemStyle, transitionDelay: `${0.5 + idx * 0.1}s` }}>
-                                    <span style={{ marginRight: 10, fontSize: '1.2rem' }}>📚</span>
-                                    {item}
-                                </li>
-                            ))}
-                        </ul>
-
-                        <div style={buttonRowStyle}>
-                            <button
-                                style={buttonStyle}
-                                onClick={() =>
-                                    navigate('/quiz', {
-                                        state: { subject, module, lessonId: 'components-cell' }
-                                    })
-                                }
-                                onMouseEnter={(e) => {
-                                    e.target.style.transform = 'translateY(-2px) scale(1.02)';
-                                    e.target.style.boxShadow = '0 12px 24px rgba(102, 126, 234, 0.4)';
-                                    e.target.style.background = 'linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%)';
-                                    e.target.style.backgroundSize = '200% 100%';
-                                    e.target.style.animation = 'shimmer 1.5s ease-in-out infinite';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.target.style.transform = 'translateY(0) scale(1)';
-                                    e.target.style.boxShadow = '0 8px 16px rgba(102, 126, 234, 0.3)';
-                                    e.target.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                                    e.target.style.backgroundSize = '100% 100%';
-                                    e.target.style.animation = 'none';
+                    <ul style={lessonListStyle}>
+                        {lessonContent.text.map((item, idx) => (
+                            <li
+                                key={idx}
+                                style={{
+                                    marginBottom: 10,
+                                    opacity: 0,
+                                    transform: 'translateY(20px)',
+                                    animation: `fadeInItem 0.5s ease forwards`,
+                                    animationDelay: `${0.3 + idx * 0.2}s`,
                                 }}
                             >
-                                🧠 Take Quiz
-                            </button>
+                                📚 {item}
+                            </li>
+                        ))}
+                    </ul>
 
-                            <button
-                                style={secondaryButtonStyle}
-                                onClick={() => navigate('/student')}
-                                onMouseEnter={(e) => {
-                                    e.target.style.transform = 'translateY(-2px) scale(1.02)';
-                                    e.target.style.boxShadow = '0 12px 24px rgba(79, 70, 229, 0.3)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.target.style.transform = 'translateY(0) scale(1)';
-                                    e.target.style.boxShadow = '0 8px 16px rgba(79, 70, 229, 0.2)';
-                                }}
-                            >
-                                ← Back to Dashboard
-                            </button>
-                        </div>
+                    <style>{`
+    @keyframes fadeInItem {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+`}</style>
+
+
+                    <div style={buttonRowStyle}>
+                        <button
+                            style={buttonStyle}
+                            onClick={() =>
+                                navigate('/quiz', {
+                                    state: { subject, module, lessonId: 'components-cell' },
+                                })
+                            }
+                        >
+                            🧠 Take Quiz
+                        </button>
+
+                        <button
+                            style={secondaryButtonStyle}
+                            onClick={() => navigate('/student')}
+                        >
+                            ← Back to Dashboard
+                        </button>
                     </div>
                 </div>
             </div>
