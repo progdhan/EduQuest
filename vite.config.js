@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt', // ⚡ prevent auto-reload, allow manual refresh
-      includeAssets: ['favicon.svg', 'robots.txt'],
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'robots.txt', 'roadmap.webp', 'vite.svg', 'images/cell-diagram.png'],
       manifest: {
         name: 'Vectus',
         short_name: 'Vectus',
@@ -19,9 +19,28 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,webp}'],
+        navigateFallback: '/Vectus/index.html',
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 }
+            }
+          }
+        ]
       }
     })
   ],
-  base: '/Vectus/' // ⚡ must match repo name exactly (case-sensitive)
+  base: '/Vectus/'
 })
